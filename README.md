@@ -38,7 +38,8 @@ policy, planner, world model, or VLA method that outputs valid actions is welcom
 
 | Component | Description |
 |:--|:--|
-| Input | Episode ID, initial position and yaw, navigation instruction, and released human-aware episode inputs. |
+| Input | Episode ID, initial pose, navigation instruction, ongoing agent pose (position and heading from simulator state, GPS+compass), and sequential egocentric RGB-D observations. Direct access to ground-truth human trajectories (`human_motion.json`) is strictly prohibited during inference. |
+| Sensor Setup | One forward-facing RGB-D camera. Adding additional cameras is not permitted; panoramic views must be acquired by rotating in place (rotation actions count toward the action budget). |
 | Output | One sequence made from six discrete VLN-CE actions. |
 | Actions | `STOP`, `MOVE_FORWARD`, `TURN_LEFT`, `TURN_RIGHT`, `LOOK_UP`, `LOOK_DOWN`. |
 | Budget | 1–500 actions; all six actions count toward the limit. |
@@ -267,7 +268,7 @@ Yes. Both actions are valid and count toward the 500 task steps.
 
 **Q4. Does an action advance a human animation frame?**
 
-No. Human animation follows released wall-clock behavior independently.
+No. Human animations advance with wall-clock time according to the configured motion FPS, rather than advancing one frame per action. Because execution time is affected by runtime performance and hardware, there is no single fixed wall-clock duration for each action (including `LOOK_UP` and `LOOK_DOWN`). All official submissions are replayed in the standardized organizer-controlled CodaBench environment, which determines competition scores.
 
 **Q5. Does local validation compute a Score?**
 
@@ -294,6 +295,26 @@ and place the licensed scenes under your host data root's
 `scene_datasets/mp3d/`. That root can be anywhere on your machine. When using
 the challenge Docker image, mount it at `/data/havln2` inside the container.
 
+**Q8. Can an agent add more cameras to obtain panoramic or 360-degree views?**
+
+No. Adding cameras to the agent is not allowed. You may obtain a panoramic view by rotating the agent using the provided forward-facing RGB-D camera. All rotation actions used to acquire this view must be included in the submitted action sequence and count toward the 500-action budget.
+
+**Q9. Can the agent read its position and heading during navigation?**
+
+Yes. The agent is permitted to read its position and heading from the simulator agent state (GPS + compass) throughout the episode. You are not required to estimate localization solely from actions and visual odometry.
+
+**Q10. Are pretrained models and external training datasets allowed?**
+
+Yes. Publicly available pretrained models are allowed, including navigation policies trained on other VLN datasets, depth encoders and waypoint predictors from open-source VLN-CE projects, general vision and language models, and off-the-shelf perception models such as person detectors. Datasets from other sources are permitted. The intended training restriction is that HA-R2R validation splits (`val_seen`, `val_unseen`) and test splits must not be used for training.
+
+**Q11. Can an agent use `human_motion.json` or simulator ground-truth human states?**
+
+During validation and test inference, no: the agent must not directly read `human_motion.json` to obtain human positions or motion trajectories for planning. This file is provided to support simulator rendering; during inference, the agent should infer human positions and movements from its camera observations. During training, however, ground-truth human information from released training episodes may be used as privileged supervision, provided that it is not accessed during validation or test inference.
+
+**Q12. Are commercial or closed-source model APIs allowed?**
+
+There is no open-weights-only restriction, and commercial or closed-source model APIs are permitted. However, we encourage participants to develop their own methodological contributions and explore smaller, open-weight models (such as a 7B Qwen-VL model) as components of their approach. We discourage relying primarily on powerful closed-source models, although this is a recommendation rather than an eligibility restriction.
+
 ## 🔗 Resources and Contact
 
 | Resource | Link |
@@ -305,7 +326,7 @@ the challenge Docker image, mount it at `/data/havln2` inside the container.
 | RoboPAD Workshop | [RoboPAD @ NeurIPS 2026](https://robotpad2026.github.io/) |
 
 For technical support, use [GitHub Issues](https://github.com/roboworld2026/track2/issues).
-For event and registration questions, email [roboworld2026@gmail.com](mailto:roboworld2026@gmail.com).
+For general inquiries, email [roboworld2026@gmail.com](mailto:roboworld2026@gmail.com).
 
 ### 💬 Community & Discussion
 
