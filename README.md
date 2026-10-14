@@ -240,7 +240,8 @@ Each file follows this schema (the invented ID is only an illustration):
 ```
 
 Include every official episode ID exactly once. `STOP`, if present, occurs once
-at the end; sequences shorter than 500 actions require it. The examples in
+at the end; sequences shorter than 500 actions require it, while sequences of
+exactly 500 actions may omit it if terminated by the step limit. The examples in
 [`examples/submission`](examples/submission) demonstrate schema only and do not
 have complete manifest coverage.
 
@@ -314,6 +315,10 @@ During validation and test inference, no: the agent must not directly read `huma
 **Q12. Are commercial or closed-source model APIs allowed?**
 
 There is no open-weights-only restriction, and commercial or closed-source model APIs are permitted. However, we encourage participants to develop their own methodological contributions and explore smaller, open-weight models (such as a 7B Qwen-VL model) as components of their approach. We discourage relying primarily on powerful closed-source models, although this is a recommendation rather than an eligibility restriction.
+
+**Q13. Does every action sequence need to end with `STOP`?**
+
+Sequences shorter than 500 actions must end with `STOP`. If an episode reaches the maximum budget of 500 actions, `STOP` may be omitted (the episode is terminated automatically by the evaluator's 500-step limit). In all cases, `STOP` may appear at most once and only as the final action.
 
 ## 🔗 Resources and Contact
 
